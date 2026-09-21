@@ -1,0 +1,21 @@
+/* instruments-v1 — themes Edwin (Mario) et Ambre (Peach) */
+/* Renommer ce fichier (instruments-v2.css...) a chaque changement visuel pour casser le cache Safari iOS. */
+
+.panel.mission.mario {
+  background: linear-gradient(180deg, #f04038, #711414);
+  color: #fff;
+}
+.panel.mission.mario button.fait { background: #ffcb05; color: #111; border: 2px solid #fff; }
+.panel.mission.mario button.bonus { background: #fff; color: #b91c1c; border: 2px solid #ffcb05; }
+
+.panel.mission.peach {
+  background: linear-gradient(180deg, #ffe3ef, #c2255c);
+  color: #6b103f;
+}
+.panel.mission.peach button.fait { background: #fff; color: #9d174d; border: 2px solid #ffcc33; }
+.panel.mission.peach button.bonus { background: #ffcc33; color: #6b103f; border: 2px solid #fff; }
+
+.panel.mission .star {
+  color: #ffd43b;
+  text-shadow: 0 3px 10px rgba(0, 0, 0, .4);
+}
