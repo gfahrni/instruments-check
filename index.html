@@ -120,6 +120,18 @@ function hashStr(s) {
   for (var i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); }
   return h >>> 0;
 }
+// Charge (et decode) une image hors DOM, puis rappelle cb avec l'Image (ou null si echec).
+// Evite le bug de repaint iOS Safari : inserer + scroller une <img> non decodee laisse une tuile blanche.
+var imgCache = {};
+function withImage(src, cb) {
+  var cached = imgCache[src];
+  if (cached) { cb(cached); return; }
+  var im = new Image();
+  function done() { imgCache[src] = im; cb(im); }
+  im.onload = function () { if (im.decode) { im.decode().then(done, done); } else { done(); } };
+  im.onerror = function () { cb(null); };
+  im.src = src;
+}
 // Carte du jour : selection stable toute la journee (stockee), change uniquement le lendemain.
 function cardFor(id) {
   if (!DATA || !DATA[id] || !DATA[id].cartes || !DATA[id].cartes.length) { return null; }
@@ -169,8 +181,7 @@ function renderStar(kid) {
         if (confirm('As tu bien fait ton instrument ?')) {
           setBonus(kid.id);
           renderStar(kid);
-          renderBonus(kid);
-          tpBonus(kid.id);
+          renderBonus(kid, function () { tpBonus(kid.id); });
         }
       };
       p.appendChild(bb);
@@ -178,26 +189,35 @@ function renderStar(kid) {
   }
   p.appendChild(restartBtn(kid));
 }
-function renderBonus(kid) {
+function renderBonus(kid, after) {
   var c = document.getElementById('bonus-' + kid.id);
-  if (!c) { return; }
+  if (!c) { if (after) { after(); } return; }
   c.innerHTML = '';
   if (!isBonus(kid.id)) {
     var lock = el('div', 'lock');
     lock.appendChild(el('div', null, '🔒'));
     lock.appendChild(el('div', null, 'Cadeau Bonus'));
     c.appendChild(lock);
+    if (after) { after(); }
     return;
   }
   var card = cardFor(kid.id);
   if (!card) {
     c.appendChild(el('p', 'lock', 'Oups, carte introuvable 😢'));
+    if (after) { after(); }
     return;
   }
-  var img = document.createElement('img');
-  img.src = card.img;
-  img.alt = '';
-  c.appendChild(img);
+  // On attend le decodage complet AVANT d'inserer la <img> et de scroller (voir withImage).
+  withImage(card.img, function (im) {
+    if (!isBonus(kid.id)) { return; }
+    c.innerHTML = '';
+    var img = document.createElement('img');
+    img.alt = '';
+    if (im) { img.width = im.naturalWidth; img.height = im.naturalHeight; }
+    img.src = card.img;
+    c.appendChild(img);
+    if (after) { after(); }
+  });
 }
 // TP vers le panneau 2 (cadeau) apres deblocage.
 function tpBonus(id) {
@@ -219,6 +239,9 @@ function buildKid(kid) {
   col.appendChild(c);
   renderStar(kid);
   renderBonus(kid);
+  // Precharge la carte du jour : deja decodee quand le Cadeau Bonus est confirme.
+  var card = cardFor(kid.id);
+  if (card) { withImage(card.img, function () {}); }
 }
 function renderJour() {
   var e = document.getElementById('jour');
