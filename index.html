@@ -178,7 +178,7 @@ function renderStar(kid) {
     } else {
       var bb = el('button', 'bonus', '🎁 Cadeau Bonus');
       bb.onclick = function () {
-        if (confirm('As tu bien fait ton instrument ?')) {
+        if (confirm(kid.nom + ', as tu bien fait ton instrument ? ' + kid.emoji)) {
           setBonus(kid.id);
           renderStar(kid);
           renderBonus(kid, function () { tpBonus(kid.id); });
