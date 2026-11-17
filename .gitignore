@@ -8,3 +8,5 @@ desktop.ini
 *.log
 __pycache__/
 *.pyc
+# Catalogue genere (voir generer-livret-cartes.py) : lourd, a regenerer a la demande
+catalogue-cartes-*.docx
